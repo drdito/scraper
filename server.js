@@ -1,26 +1,40 @@
+//I did not leave myself enough time to do this. There is lots that still needs to be done.
+
 var express = require("express");
 var bodyParser = require("body-parser");
+var logger = require("morgan");
 var mongoose = require("mongoose");
+var exphbs = require("express-handlebars");
+
+// Our scraping tools
+// Axios is a promised-based http library, similar to jQuery's Ajax method
+// It works on the client and on the server
+var axios = require("axios");
 var cheerio = require("cheerio");
-var request = require("request");
-exphbs = require("express-handlebars");
 
 // Require all models
 var db = require("./models");
+
 var PORT = 3000;
 
 // Initialize Express
 var app = express();
 
 // Configure middleware
-//Middleware declaration for body-parser
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.text());
-app.use(bodyParser.json({ type: "application/vnd.api+json" }));
 
+// Use morgan logger for logging requests
+app.use(logger("dev"));
+// Use body-parser for handling form submissions
+app.use(bodyParser.urlencoded({ extended: false }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
+
+// Set mongoose to leverage built in JavaScript ES6 Promises
+// Connect to the Mongo DB
+mongoose.Promise = Promise;
+mongoose.connect("mongodb://localhost/newsScraper", {
+  useMongoClient: true
+});
 
 //Handlebars Engine
 app.engine("handlebars", exphbs({
@@ -30,32 +44,39 @@ app.engine("handlebars", exphbs({
       return JSON.stringify(context);
     }
   }
-  }));
-  app.set("view engine", "handlebars");
-
-// Set mongoose to leverage built in JavaScript ES6 Promises
-// Connect to the Mongo DB
-mongoose.Promise = Promise;
-mongoose.connect("mongodb://localhost/week18Populater", {
-  useMongoClient: true
-});
+}));
+app.set("view engine", "handlebars");
 
 // Routes
 
-// A GET route for scraping news
+app.get("/", function(req, res) {
+  res.render("home")
+});
+
 app.get("/scrape", function(req, res) {
-  request("https://www.reddit.com/r/webdev", function(error, response, html) {
-    var $ = cheerio.load(html);
-    var results = [];
+  
+  axios.get("https://www.reddit.com/").then(function(response) {
+    var $ = cheerio.load(response.data);
     $("p.title").each(function(i, element) {
-      var title = $(element).text();
-      var link = $(element).children().attr("href");
-      results.push({
-        title: title,
-        link: link
-      });
+      var result = {};
+      result.title = $(this)
+        .text();
+      result.link = $(this)
+        .children("a")
+        .attr("href");
+
+      // Create a new Article using the `result` object built from scraping
+      db.Article
+        .create(result)
+        .then(function(dbArticle) {
+          // If we were able to successfully scrape and save an Article, send a message to the client
+          res.redirect("/");
+        })
+        .catch(function(err) {
+          // If an error occurred, send it to the client
+          res.json(err);
+        });
     });
-    console.log(results);
   });
 });
 
@@ -89,6 +110,16 @@ app.get("/articles/:id", function(req, res) {
       // If an error occurred, send it to the client
       res.json(err);
     });
+});
+
+app.get("/delete", function(req, res) {
+  db.Article
+    .remove({}, function(err) { 
+    if (err) throw err;
+    })
+    .then(function(result) {
+      res.redirect("/")
+    })
 });
 
 // Route for saving/updating an Article's associated Note
