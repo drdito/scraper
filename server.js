@@ -15,7 +15,8 @@ var cheerio = require("cheerio");
 // Require all models
 var db = require("./models");
 
-var port = process.env.PORT || 3000;
+//added porcess.env for heroku
+var PORT = process.env.PORT || 3000;
 
 // Initialize Express
 var app = express();
