@@ -3,16 +3,25 @@ $.getJSON("/articles", function(data) {
   // For each one
   for (var i = 0; i < data.length; i++) {
     if (data[i].link.includes("/r/")) {
-      $("#articles").append("<h4 data-id='" + data[i]._id + "'>" + data[i].title + "</h4>"  + "<a href='https://www.reddit.com" + data[i].link + "' target='_blank'>" + data[i].link + "</a>" + "<br/>" +"<br/>");
+      $("#articles").append("<h4 id='article" + i + "' data-id='" + data[i]._id + "'>" + 
+      data[i].title + "</h4>"  + "<a href='https://www.reddit.com" + 
+      data[i].link + "' target='_blank'>" + "https://www.reddit.com" + 
+      data[i].link + "</a>" + "<br/>" +"<br/>");
+
+     
     }
     else {
-      $("#articles").append("<h4 data-id='" + data[i]._id + "'>" + data[i].title + "</h4>"  + "<a href='" + data[i].link + "' target='_blank'>" + data[i].link + "</a>" + "<br/>" +"<br/>");  
+      $("#articles").append("<h4 id='article" + i + "' data-id='" + data[i]._id + "'>" + 
+      data[i].title + "</h4>"  + "<a href='" + 
+      data[i].link + "' target='_blank'>" + data[i].link + "</a>" + "<br/>" +"<br/>");
+       
     }
+    
   }
 });
 
 
-// Whenever someone clicks a p tag
+
 $(document).on("click", "h4", function() {
   // Empty the notes from the note section
   $("#notes").empty();

@@ -4,6 +4,10 @@ body { background-color: #F2F6D0 }
   padding-top: 5%;
   margin: 10px;
 }
+#articles {
+  width: 60%;
+  float: left;
+}
 
 #notes {
   float: right;
@@ -24,5 +28,9 @@ textarea {
 }
 
 h4 {
+  cursor: pointer;
+}
+
+.btn {
   cursor: pointer;
 }

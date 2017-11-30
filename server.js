@@ -55,7 +55,8 @@ app.get("/", function(req, res) {
 
 app.get("/scrape", function(req, res) {
   
-  axios.get("https://www.reddit.com/").then(function(response) {
+  axios.get("https://www.reddit.com/")
+  .then(function(response) {
     var $ = cheerio.load(response.data);
     $("p.title").each(function(i, element) {
       var result = {};
@@ -77,7 +78,7 @@ app.get("/scrape", function(req, res) {
           res.json(err);
         });
     });
-  });
+  }); 
 });
 
 // Route for getting all Articles from the db
@@ -119,6 +120,9 @@ app.get("/delete", function(req, res) {
     })
     .then(function(result) {
       res.redirect("/")
+    })
+    .catch(function(err) {
+      res.json(err);
     })
 });
 
